@@ -19,18 +19,159 @@ df[,c_var] <- lapply(df[,c_var],factor)
 ## Exploratory Plots
 
 ```{r}
-source(here("scripts","graphs"))
+source(here("scripts","graphs.r"))
+```
+
+```{r}
+ggarrange(distance, surface, weight, angle, labels = c("A","B","C","D"))
+ggarrange(exp3,exp4)
 ```
 
 ## Interactions
 
 ## Model Selection 1
 
+```{r}
+df <- df[,-1]
+df <- df[,-4:-6]
+
+```
+
+```{r}
+
+m.empty <- lm(Distance_avg ~ 1,
+              data = df)
+
+m.full.1w <- lm(Distance_avg ~., 
+              data = df)
+
+m.full.2w <- lm(Distance_avg ~.^2, 
+              data = df)
+
+
+
+## Stepwise
+
+m.step.1w.f <- step(m.empty,
+                direction = "forward")
+
+m.step.1w.r <- step(m.full.1w,
+                direction = "backward")
+
+m.step.1w.b <- step(m.full.1w,
+                direction = "both")
+
+m.step.2w.b <- step(m.full.2w,
+                direction = "both")
+
+model.list <- list(
+  "Forward-One-Way" = m.step.1w.f,
+  "Backward-One-Way" = m.step.1w.r,
+  "Both-One-Way" = m.step.1w.b,
+  "Both-Two-Way" = m.step.2w.b)
+
+bics <- sapply(model.list,FUN = BIC)
+
+#Aggregate measures of fit into a single data-frame for plotting
+plot_data <- data.frame(
+                  model = c("Forward-One-Way",
+                            "Backward-One-Way",
+                            "Both-One-Way", 
+                            "Both-Two-Way"),
+                  Bic = bics)
+
+knitr::kable(plot_data,row.names = FALSE,
+             col.names = c("Model","BIC"))
+
+```
+
+
 ## Model Evaluation 1
+
+```{r}
+summary(m.step.1w.b)
+
+par(mfrow = c(2,2))
+plot(m.step.1w.b$fitted.values,m.step.1w.b$residuals)
+abline(h=0,col='red')
+plot(m.step.1w.b$residuals,type = "l")
+abline(h=0,col='red')
+hist(m.step.1w.b$residuals)
+qqnorm(m.step.1w.b$residuals)
+qqline(m.step.1w.b$residuals)
+
+```
 
 ## Model Selection 2
 
+```{r}
+
+m.empty.log <- lm(log(Distance_avg) ~ 1,
+              data = df)
+
+m.full.1w.log <- lm(log(Distance_avg) ~., 
+              data = df)
+
+m.full.2w.log <- lm(log(Distance_avg) ~.^2, 
+              data = df)
+
+
+
+## Stepwise
+
+m.step.1w.f.log <- step(m.empty.log,
+                direction = "forward")
+
+m.step.1w.r.log <- step(m.full.1w.log,
+                direction = "backward")
+
+m.step.1w.b.log <- step(m.full.1w.log,
+                direction = "both")
+
+m.step.2w.b.log <- step(m.full.2w.log,
+                direction = "both")
+
+model.list <- list(
+  "Forward-One-Way (Log)" = m.step.1w.f.log,
+  "Backward-One-Way (Log)" = m.step.1w.r.log,
+  "Both-One-Way (Log)" = m.step.1w.b.log,
+  "Both-Two-Way (Log)" = m.step.2w.b.log)
+
+bics.log <- sapply(model.list,FUN = BIC)
+
+#Aggregate measures of fit into a single data-frame for plotting
+plot_data <- data.frame(
+                  model = c("Forward-One-Way (Log)",
+                            "Backward-One-Way (Log)",
+                            "Both-One-Way (Log)", 
+                            "Both-Two-Way (Log)"),
+                  Bic = bics.log)
+
+knitr::kable(plot_data,row.names = FALSE,
+             col.names = c("Model","BIC"))
+
+```
+
 ## Model Section 2
+
+```{r}
+summary(m.step.2w.b.log)
+
+par(mfrow = c(2,2))
+plot(m.step.2w.b.log$fitted.values,m.step.2w.b.log$residuals)
+abline(h=0,col='red')
+plot(m.step.2w.b.log$residuals,type = "l")
+abline(h=0,col='red')
+hist(m.step.2w.b.log$residuals)
+qqnorm(m.step.2w.b.log$residuals)
+qqline(m.step.2w.b.log$residuals)
+
+```
 
 ## Analysis of Variance
 
+```{r}
+anova(m.step.2w.b.log)
+TukeyHSD(aov(m.step.2w.b.log))
+
+```

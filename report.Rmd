@@ -171,7 +171,9 @@ qqline(m.step.2w.b.log$residuals)
 ## Analysis of Variance
 
 ```{r}
-anova(m.step.2w.b.log)
-TukeyHSD(aov(m.step.2w.b.log))
+fit.anova <- aov(formula = Distance_avg ~ .^2, data = df)
+summary(fit.anova)
+thsd_aov <- TukeyHSD(fit.anova)
+thsd_aov
 
 ```

@@ -1,0 +1,36 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#Toy Car Distance Optimization
+
+## Premable
+
+```{r, include=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+source("./scripts/setup.r") # refresh R, install + library required packages.
+
+
+df <- read.csv(here("data","data.csv"))
+c_var <- c("Surface_type","Weight","Angle") #make all our variables categorical
+df[,c_var] <- lapply(df[,c_var],factor)
+```
+
+## Exploratory Plots
+
+```{r}
+source(here("scripts","graphs"))
+```
+
+## Interactions
+
+## Model Selection 1
+
+## Model Evaluation 1
+
+## Model Selection 2
+
+## Model Section 2
+
+## Analysis of Variance
+

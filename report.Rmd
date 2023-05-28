@@ -5,7 +5,7 @@ output: html_notebook
 
 #Toy Car Distance Optimization
 
-## Exploratory Plots
+## Exploratory Plots + Analysis Plots
 
 
 ```{r}
@@ -535,7 +535,7 @@ ggarrange(surface_type_plot, angle_plot)
 
 ```
 
-
+_
 ## Premable + Data Read
 
 ```{r, include=TRUE, warning=FALSE, message=FALSE, error=FALSE}
@@ -580,15 +580,6 @@ ggplot(data = df) +
   theme_bw()+
   ylab("Distance (cm)")+
   xlab("Index")
-```
-
-
-
-
-
-```{r}
-ggarrange(distance, surface, weight, angle, labels = c("A","B","C","D"))
-ggarrange(exp3,exp4)
 ```
 
 ## Model Selection 1 (Initial)
@@ -737,25 +728,6 @@ nested.log <- lm(formula = log(Distance_avg) ~ Surface_type + Angle +
 anova(nested.log,m.step.2w.b.log)
 ```
 
-
-## Model Section 2
-
-```{r}
-# Summary of best model
-summary(m.step.2w.b.log)
-
-
-# Check Linear Assumptions
-par(mfrow = c(2,2))
-plot(m.step.2w.b.log$fitted.values,m.step.2w.b.log$residuals)
-abline(h=0,col='red')
-plot(m.step.2w.b.log$residuals,type = "l")
-abline(h=0,col='red')
-hist(m.step.2w.b.log$residuals)
-qqnorm(m.step.2w.b.log$residuals)
-qqline(m.step.2w.b.log$residuals)
-
-```
 
 ## Model Stastics 
 

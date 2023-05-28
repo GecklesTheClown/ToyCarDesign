@@ -1,0 +1,125 @@
+---
+title: "MXB242 Experiment Analysis"
+author: "TBD"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#### Refreshing R
+rm(list = ls())
+if (length((.packages())) > 7){
+invisible(lapply(paste0("package:", names(sessionInfo()$otherPkgs)),
+                 detach,
+                 character.only = TRUE, unload = TRUE))}
+
+#### Load Packages
+
+pckgs <- c("tidyverse", "plotly", "broom", "readr", "MASS", "ggpubr", "AER", "DHARMa", "jtools", "broom.mixed", "MASS", "reshape2")
+lapply(pckgs, require, character.only = TRUE)
+rm(list = ls())
+
+```
+
+
+## Data Exploration (Visual Plots)
+
+```{r}
+data <- data.frame(read.csv(file = "C:/Users/NickGecks/Desktop/placeholder/data.csv"))
+
+
+#### This is a crude way of doing
+data$Surface_type <- factor(data$Surface_type)
+data <- data [,-1]
+data <- data [,-4:-6]
+
+ggplot(data, aes(x=Angle, y= Distance_avg)) +
+    geom_point() +
+    facet_grid( ~ Surface_type)
+
+```
+
+## Data Exploration (Stepwise Model Choice)
+
+```{r}
+
+m.empty <- lm(Distance_avg ~ 1,
+              data = data)
+
+m.full <- lm(Distance_avg ~., 
+              data = data)
+
+m.stepf <- step(m.empty,
+                direction = "forward")
+
+m.stepr <- step(m.full,
+                direction = "backward")
+
+m.stepr <- step(m.full,
+                direction = "both")
+
+
+model.list <- list(
+  "MSF" = m.stepf,
+  "MSR" = m.stepr,
+  "MSB" = m.stepr)
+
+logLiks <- sapply(model.list,FUN = logLik)
+aics <- sapply(model.list,FUN = AIC)
+bics <- sapply(model.list,FUN = BIC)
+
+#Aggregate measures of fit into a single data-frame for plotting
+plot_data <- data.frame(
+                  model = c("PM1","PM2","PM3"),
+                  aic = aics,
+                  bic = bics,
+                  logL = logLiks)
+
+knitr::kable(plot_data,row.names = FALSE,
+             col.names = c("Model","AIC","BIC","log-Likelihood"))
+
+long_plot_data <- melt(data = plot_data,
+                  id = "model",
+                  variable.name = "measure")
+
+ggplot(
+  data = long_plot_data,
+  mapping = aes(x = model, y = value, group = measure, colour = measure)) + 
+  geom_point() +
+  scale_colour_discrete(
+    breaks = c("aic","bic","logL"),
+    labels = c("AIC","BIC","log-Lik.")) +
+  labs(x = "Model",y = "Value", colour = "Measure")
+
+```
+
+## Assumption Analysis
+
+```{r}
+par(mfrow = c(2, 2))
+plot(m.stepb)
+```
+
+## Transformation Time
+
+```{r}
+m.full.log <- lm(log(Distance_avg) ~., 
+              data = data)
+m.stepb.log <- step(m.full.log,
+                    direction = "both")
+m.test <- lm(sqrt(Distance_avg) ~ Surface_type + Angle + Surface_type*Angle,
+             data = data)
+
+summary(m.test)
+par(mfrow = c(2, 2))
+plot(m.test)
+
+```
+
+
+
+
+
+
